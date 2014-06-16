@@ -5,48 +5,60 @@
 # the 2nd parameter is an array of 'requires'
 # 'starter.services' is found in services.js
 # 'starter.controllers' is found in controllers.js
+
+# Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
+# for form inputs)
+
+# org.apache.cordova.statusbar required
 angular.module("starter", [
   "ionic"
-  "starter.services"
   "starter.controllers"
-]).config ($stateProvider, $urlRouterProvider) ->
-  
+  "starter.services"
+]).run(($ionicPlatform) ->
+  $ionicPlatform.ready ->
+    cordova.plugins.Keyboard.hideKeyboardAccessoryBar true  if window.cordova and window.cordova.plugins.Keyboard
+    StatusBar.styleDefault()  if window.StatusBar
+).config ($stateProvider, $urlRouterProvider) ->
+
   # Ionic uses AngularUI Router which uses the concept of states
   # Learn more here: https://github.com/angular-ui/ui-router
   # Set up the various states which the app can be in.
   # Each state's controller can be found in controllers.js
-  
+
   # setup an abstract state for the tabs directive
-  
-  # the pet tab has its own child nav-view and history
+
+  # Each tab has its own nav history stack:
   $stateProvider.state("tab",
     url: "/tab"
     abstract: true
     templateUrl: "templates/tabs.html"
-  ).state("tab.pet-index",
-    url: "/pets"
+  ).state("tab.dash",
+    url: "/dash"
     views:
-      "pets-tab":
-        templateUrl: "templates/pet-index.html"
-        controller: "PetIndexCtrl"
-  ).state("tab.pet-detail",
-    url: "/pet/:petId"
+      "tab-dash":
+        templateUrl: "templates/tab-dash.html"
+        controller: "DashCtrl"
+  ).state("tab.friends",
+    url: "/friends"
     views:
-      "pets-tab":
-        templateUrl: "templates/pet-detail.html"
-        controller: "PetDetailCtrl"
-  ).state("tab.adopt",
-    url: "/adopt"
+      "tab-friends":
+        templateUrl: "templates/tab-friends.html"
+        controller: "FriendsCtrl"
+  ).state("tab.friend-detail",
+    url: "/friend/:friendId"
     views:
-      "adopt-tab":
-        templateUrl: "templates/adopt.html"
-  ).state "tab.about",
-    url: "/about"
+      "tab-friends":
+        templateUrl: "templates/friend-detail.html"
+        controller: "FriendDetailCtrl"
+  ).state "tab.account",
+    url: "/account"
     views:
-      "about-tab":
-        templateUrl: "templates/about.html"
+      "tab-account":
+        templateUrl: "templates/tab-account.html"
+        controller: "AccountCtrl"
 
-  
+
   # if none of the above states are matched, use this as the fallback
-  $urlRouterProvider.otherwise "/tab/pets"
+  $urlRouterProvider.otherwise "/tab/dash"
+  return
 

@@ -1,32 +1,33 @@
-var gulp = require('gulp'),
-    gutil = require('gulp-util'),
-    sass = require('gulp-sass'),
-    coffee = require('gulp-coffee'),
-    jade = require('gulp-jade'),
-    livereload = require('gulp-livereload'),
-    changed = require('gulp-changed'),
-    ripple = require('ripple-emulator'),
-    open = require('open'),
-    http = require('http'),
-    path = require('path'),
-    ecstatic = require('ecstatic'),
-    notify = require('gulp-notify'),
-    concat = require('gulp-concat'),
-    clean = require('gulp-clean'),
-    runSequence = require('run-sequence');
+var gulp = require('gulp');
+var gutil = require('gulp-util');
+var bower = require('bower');
+var concat = require('gulp-concat');
+var sass = require('gulp-sass');
+var minifyCss = require('gulp-minify-css');
+var rename = require('gulp-rename');
+var sh = require('shelljs');
+
+var coffee = require('gulp-coffee');
+var livereload = require('gulp-livereload');
+var changed = require('gulp-changed');
+var ripple = require('ripple-emulator');
+var open = require('open');
+var http = require('http');
+var path = require('path');
+var ecstatic = require('ecstatic');
+var notify = require('gulp-notify');
+var clean = require('gulp-clean');
+var runSequence = require('run-sequence');
 
 var paths = {
-  "public": ['public/**'],
-  styles: ['app/css/**/*.scss'],
+  styles: ['app/scss/**/*.scss'],
   scripts: {
-    vendor: ["public/components/ionic/release/js/ionic.js", "public/components/angular/angular.js", "public/components/angular-animate/angular-animate.js", "public/components/angular-sanitize/angular-sanitize.js", "public/components/angular-ui-router/release/angular-ui-router.js", "public/components/ionic/release/js/ionic-angular.js"],
     app: ['app/js/**/*.coffee']
   },
-  templates: ['app/**/*.jade']
+  templates: ['app/**/*.html']
 };
 
 var destinations = {
-  "public": 'www',
   styles: 'www/css',
   scripts: 'www/js',
   templates: 'www',
@@ -40,31 +41,28 @@ var options = {
 };
 
 gulp.task('clean', function() {
-  return gulp.src('www', {
+  return gulp.src(['www/js', 'www/css', 'www/templates'], {
     read: false
   })
     .pipe(clean());
 });
 
-gulp.task('copy_public', function() {
-  return gulp.src(paths["public"])
-    .pipe(gulp.dest(destinations["public"]));
-});
 
-gulp.task('styles', function() {
-  return gulp.src(paths.styles)
-    .pipe(sass({
-      errLogToConsole: true,
-      sourceComments: 'map'
+gulp.task('styles', function(done) {
+  gulp.src(paths.styles)
+    .pipe(sass())
+    .pipe(gulp.dest(destinations.styles))
+    .pipe(minifyCss({
+      keepSpecialComments: 0
     }))
-    .pipe(gulp.dest(destinations.styles));
+    .pipe(rename({
+      extname: '.min.css'
+    }))
+    .pipe(gulp.dest(destinations.styles))
+    .on('end', done);
 });
 
 gulp.task('scripts', function() {
-  gulp.src(paths.scripts.vendor)
-    .pipe(concat('vendor.js'))
-    .pipe(gulp.dest(destinations.scripts));
-
   return gulp.src(paths.scripts.app)
     .pipe(coffee({
       sourceMap: false
@@ -78,19 +76,13 @@ gulp.task('templates', function() {
     .pipe(changed(destinations.templates, {
       extension: '.html'
     }))
-    .pipe(jade({
-      locals: {},
-      pretty: true
-    }))
     .pipe(gulp.dest(destinations.templates));
 });
 
 gulp.task('watch', function() {
   var livereloadServer = livereload();
 
-  gulp.watch(paths["public"], ['copy_public']);
   gulp.watch(paths.scripts.app, ['scripts']);
-  gulp.watch(paths.scripts.vendor, ['scripts']);
   gulp.watch(paths.styles, ['styles']);
   gulp.watch(paths.templates, ['templates']);
 
@@ -129,16 +121,35 @@ gulp.task('server', function() {
 
 gulp.task('build', function(cb) {
   return runSequence(
-    'clean', 
-    ['copy_public', 'styles', 'scripts', 'templates'], 
+    'clean', ['styles', 'scripts', 'templates'],
     cb
   );
 });
 
 gulp.task('default', function(cb) {
   return runSequence(
-    'build', 
-    ['watch', 'server'],
+    // 'build', ['watch', 'server'],
+    'build', ['watch'],
     cb
   );
+});
+
+gulp.task('install', ['git-check'], function() {
+  return bower.commands.install()
+    .on('log', function(data) {
+      gutil.log('bower', gutil.colors.cyan(data.id), data.message);
+    });
+});
+
+gulp.task('git-check', function(done) {
+  if (!sh.which('git')) {
+    console.log(
+      '  ' + gutil.colors.red('Git is not installed.'),
+      '\n  Git, the version control system, is required to download Ionic.',
+      '\n  Download git here:', gutil.colors.cyan('http://git-scm.com/downloads') + '.',
+      '\n  Once git is installed, run \'' + gutil.colors.cyan('gulp install') + '\' again.'
+    );
+    process.exit(1);
+  }
+  done();
 });

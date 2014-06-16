@@ -2,38 +2,34 @@
 ###
 A simple example service that returns some data.
 ###
-angular.module("starter.services", []).factory "PetService", ->
-  
+angular.module("starter.services", []).factory "Friends", ->
+
   # Might use a resource here that returns a JSON array
-  
+
   # Some fake testing data
-  pets = [
+  friends = [
     {
       id: 0
-      title: "Cats"
-      description: "Furry little creatures. Obsessed with plotting assassination, but never following through on it."
+      name: "Scruff McGruff"
     }
     {
       id: 1
-      title: "Dogs"
-      description: "Lovable. Loyal almost to a fault. Smarter than they let on."
+      name: "G.I. Joe"
     }
     {
       id: 2
-      title: "Turtles"
-      description: "Everyone likes turtles."
+      name: "Miss Frizzle"
     }
     {
       id: 3
-      title: "Sharks"
-      description: "An advanced pet. Needs millions of gallons of salt water. Will happily eat you."
+      name: "Ash Ketchum"
     }
   ]
   all: ->
-    pets
+    friends
 
-  get: (petId) ->
-    
+  get: (friendId) ->
+
     # Simple index lookup
-    pets[petId]
+    friends[friendId]
 
