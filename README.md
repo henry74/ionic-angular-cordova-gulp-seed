@@ -9,21 +9,12 @@ The perfect starting point for an Ionic project.
 ## Short guide
 
 ```
-g clone jtomaszewski/ionic-angular-cordova-gulp-seed
+g clone henry74/ionic-angular-cordova-gulp-seed
 cd ionic-angular-cordova-gulp-seed
 npm install
-bower install
-gulp
+gulp install
 ```
 
-All .scss, .coffee, .jade files from `app/` will be compiled and copied to `www/`
-
-All files from `public/` will be copied to `www/`
+All .scss, .coffee files from `app/` will be compiled and copied to `www/`
 
 P.S. `www/` is like `dist/` directory for Cordova.
-
-
-## TODO
-
-1) concat .css, .coffee files, also with support for .js vendors from components/
-2) js testing ??
